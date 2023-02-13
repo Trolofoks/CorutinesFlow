@@ -1,27 +1,29 @@
 package com.example.corutinesflow
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
+import android.util.Log
 import androidx.lifecycle.ViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 
 class MainTestViewModel():ViewModel() {
 
-    private val _visibleLive = MutableLiveData<Boolean>().apply {
-        value = false
+    init {
+        Log.d("MyLog","пересоздался")
     }
-    val visibleLive : LiveData<Boolean> = _visibleLive
 
-    private val _messageLive = MutableLiveData<String>().apply {
-        value = "Hello world"
-    }
-    val messageLive : LiveData<String> = _messageLive
+    private val _visibleFlow = MutableStateFlow<Boolean>(value = false)
+    val visibleFlow : StateFlow<Boolean> = _visibleFlow.asStateFlow()
+
+    private val _messageFlow = MutableStateFlow<String>(value = "Hello world")
+    val messageFlow : StateFlow<String> = _messageFlow.asStateFlow()
 
     fun toggleVisibility(visible: Boolean){
-        _visibleLive.value = visible
+        _visibleFlow.value = visible
     }
 
     fun setMessage(message: String){
-        _messageLive.value = message
+        _messageFlow.value = message
     }
 
 }

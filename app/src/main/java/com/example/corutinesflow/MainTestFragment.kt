@@ -2,12 +2,16 @@ package com.example.corutinesflow
 
 import android.os.Bundle
 import android.util.Log
-import androidx.fragment.app.Fragment
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
+import androidx.core.view.isVisible
 import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.viewModelScope
 import com.example.corutinesflow.databinding.FragmentMainTestBinding
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 
 class MainTestFragment : BaseFragment<FragmentMainTestBinding>(FragmentMainTestBinding::inflate){
 
@@ -15,23 +19,32 @@ class MainTestFragment : BaseFragment<FragmentMainTestBinding>(FragmentMainTestB
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        vm = MainTestViewModel()
+        vm = ViewModelProvider(this).get(MainTestViewModel::class.java)
 
-        vm.visibleLive.observe(viewLifecycleOwner, Observer {isVisible ->
-            if (isVisible){
-                binding.textView.visibility = View.VISIBLE
-            } else {
-                binding.textView.visibility = View.INVISIBLE
-            }
-        })
+        lifecycleScope.launchWhenCreated {
+            vm.messageFlow
+                .onEach {message->
+                    binding.textView.text = message
+                    Log.d("MyLogMessage", "$message")
 
-        vm.messageLive.observe(viewLifecycleOwner, Observer {text ->
-            binding.textView.text = text
-        })
-
+                }
+                .collect()
+        }
         binding.checkBox.setOnCheckedChangeListener { _, isChecked ->
-            Log.d("MyLog", "$isChecked")
+            Log.d("MyLogCheck", "$isChecked")
             vm.toggleVisibility( isChecked )
         }
+
+        lifecycleScope.launchWhenCreated {
+            vm.visibleFlow.collect() {isVisible->
+                Log.d("MyLogVisible", "$isVisible")
+                binding.textView.isVisible = isVisible
+                binding.checkBox.isChecked = isVisible
+            }
+        }
+
+
+
+
     }
 }
